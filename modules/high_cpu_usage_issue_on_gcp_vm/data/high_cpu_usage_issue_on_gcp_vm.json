@@ -1,0 +1,118 @@
+{
+  "name": "high_cpu_usage_issue_on_gcp_vm",
+  "description": "This incident type refers to a problem with high CPU usage on a virtual machine (VM) hosted on Google Cloud Platform (GCP). Users may experience slow performance or even complete unresponsiveness from their VM due to the excessive processing load. To resolve the issue, users may need to run Linux commands directly on the VM or use GCP CLI compute commands to diagnose the root cause of the problem. Remediations may involve changing the instance type or resizing some aspects of the GCP VM to optimize its performance.",
+  "params": [
+    {
+      "name": "NAME_OF_YOUR_VM",
+      "value": ""
+    },
+    {
+      "name": "NEW_MACHINE_TYPE",
+      "value": ""
+    },
+    {
+      "name": "INSTANCE_NAME",
+      "value": ""
+    },
+    {
+      "name": "ZONE_OF_YOUR_VM",
+      "value": ""
+    },
+    {
+      "name": "YOUR_PROJECT_ID",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## High CPU Usage Issue on GCP VM\nThis incident type refers to a problem with high CPU usage on a virtual machine (VM) hosted on Google Cloud Platform (GCP). Users may experience slow performance or even complete unresponsiveness from their VM due to the excessive processing load. To resolve the issue, users may need to run Linux commands directly on the VM or use GCP CLI compute commands to diagnose the root cause of the problem. Remediations may involve changing the instance type or resizing some aspects of the GCP VM to optimize its performance."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 1. List all VM instances in the project"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `gcloud compute instances list`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 2. SSH into the problematic VM instance"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `gcloud compute ssh ${INSTANCE_NAME}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 3. Check CPU usage using top command"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `top`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 4. Check CPU usage by process using ps command"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ps aux | sort -nrk 3,3 | head -n 5`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 5. Check CPU usage by thread and sort in descending order"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ps -eLo pid,ppid,%cpu,%mem,args --sort=-%cpu | head`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Upgrade the VM instance type to one with more CPU cores, memory, or storage capacity to handle the workload."
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_upgrade_vm_types($NAME_OF_YOUR_VM, $NEW_MACHINE_TYPE, $INSTANCE_NAME, $ZONE_OF_YOUR_VM, $YOUR_PROJECT_ID)"
+    }
+  ]
+}
